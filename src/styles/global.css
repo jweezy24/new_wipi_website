@@ -88,6 +88,12 @@ button {
   flex-shrink: 0;
 }
 
+@media (max-width: 768px) {
+  .navbar__logo-wrapper {
+    width: 100%;
+  }
+}
+
 .navbar__logo-link {
   display: flex;
   align-items: center;
