@@ -73,10 +73,24 @@ type: 'Conference'  # Options: Conference, Journal, Dissertation, Patent, arXiv
 year: 2024
 venue: 'Conference/Journal Name'
 pdfUrl: '/pdfs/your-paper.pdf'  # Optional - put PDF in public/pdfs/
+link: 'https://example.com/paper'  # Optional - makes title clickable
+bibtex: |  # Optional - custom BibTeX entry (use | for multiline)
+  @inproceedings{author2024title,
+    author = {Author One and Author Two},
+    title = {Your Publication Title},
+    booktitle = {Conference/Journal Name},
+    year = {2024}
+  }
 focus: ['systems', 'ai']  # Options: systems, people, math, ai
 ---
 Abstract text goes here. This will be displayed as the publication description.
 ```
+
+**Notes:**
+- Publications are automatically sorted by year in descending order (latest first)
+- If `link` is provided, the title becomes a clickable link that opens in a new tab
+- If `bibtex` is provided, it will be used when clicking the "BibTeX" button. Otherwise, a BibTeX entry will be auto-generated from the publication metadata
+- Use `|` (YAML literal block scalar) for multiline bibtex entries to preserve line breaks
 
 **Focus options explained:**
 - `systems` - "In Systems" - OS, platforms, large-scale systems
@@ -119,10 +133,15 @@ venue: 'Conference/Journal'
 slidesUrl: '/slides/project-slides.pdf'  # Optional - put in public/slides/
 githubUrl: 'https://github.com/org/repo'  # Optional
 huggingFaceUrl: 'https://huggingface.co/org/model'  # Optional
+link: 'https://example.com/project'  # Optional - makes title clickable
 focus: ['ai', 'people']  # Same options as publications
 ---
 Project description goes here.
 ```
+
+**Notes:**
+- Artifacts are automatically sorted by year in descending order (latest first)
+- If `link` is provided, the title becomes a clickable link that opens in a new tab
 
 ---
 

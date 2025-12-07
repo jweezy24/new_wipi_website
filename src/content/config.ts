@@ -9,6 +9,8 @@ const publicationsCollection = defineCollection({
     year: z.number().optional(),
     venue: z.string().optional(),
     pdfUrl: z.string().optional(),
+    link: z.string().optional(),
+    bibtex: z.string().optional(),
     focus: z.array(z.enum(['systems', 'people', 'math', 'ai'])),
   }),
 });
@@ -33,6 +35,7 @@ const projectsCollection = defineCollection({
     slidesUrl: z.string().optional(),
     githubUrl: z.string().optional(),
     huggingFaceUrl: z.string().optional(),
+    link: z.string().optional(),
     focus: z.array(z.enum(['systems', 'people', 'math', 'ai'])),
   }),
 });

@@ -2,22 +2,43 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
+const base = import.meta.env.BASE_URL;
 const projects = await getCollection('projects');
+// Sort by year in descending order (latest first), then by title for items without year
+const sortedProjects = projects.sort((a, b) => {
+  const yearA = a.data.year || 0;
+  const yearB = b.data.year || 0;
+  if (yearB !== yearA) {
+    return yearB - yearA; // Descending order
+  }
+  // If years are equal (or both 0), sort alphabetically by title
+  return a.data.title.localeCompare(b.data.title);
+});
 
 const focusOptions = [
   { key: 'all', label: 'All' },
-  { key: 'systems', label: 'In Systems' },
-  { key: 'people', label: 'For People' },
-  { key: 'math', label: 'Using Math' },
-  { key: 'ai', label: 'For/Using AI' },
+  { key: 'systems', label: 'Systems' },
+  { key: 'people', label: 'People' },
+  { key: 'math', label: 'Math' },
+  { key: 'ai', label: 'AI' },
 ];
 
 const focusLabelMap: Record<string, string> = {
-  systems: 'In Systems',
-  people: 'For People',
-  math: 'Using Math',
-  ai: 'For/Using AI',
+  systems: 'Systems',
+  people: 'People',
+  math: 'Math',
+  ai: 'AI',
 };
+
+// Helper to resolve asset URLs with base path
+function resolveUrl(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  // If it starts with /, prepend base (removing trailing slash from base to avoid double slashes)
+  if (url.startsWith('/')) {
+    return base.replace(/\/$/, '') + url;
+  }
+  return url;
+}
 ---
 
 <BaseLayout title="Artifacts" includeFooter={false}>
@@ -45,7 +66,7 @@ const focusLabelMap: Record<string, string> = {
 
       <!-- Projects Grid -->
       <div class="projects-grid" id="projects-grid">
-        {projects.map((proj, index) => (
+        {sortedProjects.map((proj, index) => (
           <div 
             class="project-card"
             data-focus={JSON.stringify(proj.data.focus)}
@@ -53,7 +74,15 @@ const focusLabelMap: Record<string, string> = {
             style={`--project-index: ${index}`}
           >
             <div class="project-card__title-row">
-              <h3 class="project-card__title">{proj.data.title}</h3>
+              <h3 class="project-card__title">
+                {proj.data.link ? (
+                  <a href={proj.data.link} target="_blank" rel="noopener noreferrer">
+                    {proj.data.title}
+                  </a>
+                ) : (
+                  proj.data.title
+                )}
+              </h3>
             </div>
 
             <div class="project-card__meta-row">
@@ -77,14 +106,14 @@ const focusLabelMap: Record<string, string> = {
 
             <div class="project-card__btn-row">
               {proj.data.slidesUrl && (
-                <button 
+                <a 
                   class="btn-primary" 
-                  data-slides={proj.data.slidesUrl}
-                  data-title={proj.data.title}
+                  href={resolveUrl(proj.data.slidesUrl)}
+                  download
                   title="Download Slides"
                 >
                   Download Slides
-                </button>
+                </a>
               )}
 
               {proj.data.githubUrl && (
@@ -129,21 +158,6 @@ const focusLabelMap: Record<string, string> = {
     </div>
   </main>
 
-  <!-- Slides Modal -->
-  <div class="modal-backdrop" id="slides-modal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h4 class="modal-title">Slides</h4>
-        <button class="modal-close" data-close-modal>×</button>
-      </div>
-      <div class="modal-body">
-        <iframe class="slides-frame" id="slides-frame" src="" title="Slides Viewer"></iframe>
-        <a class="slides-link" id="slides-link" href="" target="_blank" rel="noopener noreferrer">
-          Download Slides
-        </a>
-      </div>
-    </div>
-  </div>
 </BaseLayout>
 
 <script>
@@ -187,44 +201,5 @@ const focusLabelMap: Record<string, string> = {
     });
   });
 
-  // Slides Modal
-  const slidesModal = document.getElementById('slides-modal');
-  const slidesFrame = document.getElementById('slides-frame') as HTMLIFrameElement;
-  const slidesLink = document.getElementById('slides-link') as HTMLAnchorElement;
-
-  document.querySelectorAll('[data-slides]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const slidesUrl = btn.getAttribute('data-slides');
-      if (slidesUrl && slidesModal && slidesFrame && slidesLink) {
-        slidesFrame.src = slidesUrl;
-        slidesLink.href = slidesUrl;
-        slidesModal.classList.add('open');
-      }
-    });
-  });
-
-  // Close modal
-  document.querySelectorAll('[data-close-modal]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      slidesModal?.classList.remove('open');
-      if (slidesFrame) slidesFrame.src = '';
-    });
-  });
-
-  // Close modal on backdrop click
-  slidesModal?.addEventListener('click', (e) => {
-    if (e.target === slidesModal) {
-      slidesModal.classList.remove('open');
-      if (slidesFrame) slidesFrame.src = '';
-    }
-  });
-
-  // Close modal on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      slidesModal?.classList.remove('open');
-      if (slidesFrame) slidesFrame.src = '';
-    }
-  });
 </script>
 

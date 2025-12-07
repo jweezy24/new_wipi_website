@@ -3,14 +3,24 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 
 const publications = await getCollection('publications');
+// Sort by year in descending order (latest first), then by title for items without year
+const sortedPublications = publications.sort((a, b) => {
+  const yearA = a.data.year || 0;
+  const yearB = b.data.year || 0;
+  if (yearB !== yearA) {
+    return yearB - yearA; // Descending order
+  }
+  // If years are equal (or both 0), sort alphabetically by title
+  return a.data.title.localeCompare(b.data.title);
+});
 
 const types = ['All', 'Conference', 'Journal', 'Dissertation', 'Patent', 'arXiv'];
 const focusOptions = [
   { key: 'all', label: 'All' },
-  { key: 'systems', label: 'In Systems' },
-  { key: 'people', label: 'For People' },
-  { key: 'math', label: 'Using Math' },
-  { key: 'ai', label: 'For/Using AI' },
+  { key: 'systems', label: 'Systems' },
+  { key: 'people', label: 'People' },
+  { key: 'math', label: 'Math' },
+  { key: 'ai', label: 'AI' },
 ];
 
 const focusLabelMap: Record<string, string> = {
@@ -21,7 +31,7 @@ const focusLabelMap: Record<string, string> = {
 };
 ---
 
-<BaseLayout title="Publications" includeFooter={false}>
+<BaseLayout title="Publications" includeFooter={true}>
   <main class="publications-page">
     <div class="publications-page__header">
       <h1 class="publications-page__heading">Publications</h1>
@@ -60,7 +70,7 @@ const focusLabelMap: Record<string, string> = {
 
       <!-- Publications Grid -->
       <div class="publications-grid" id="publications-grid">
-        {publications.map((pub, index) => (
+        {sortedPublications.map((pub, index) => (
           <div 
             class="pub-card"
             data-type={pub.data.type}
@@ -69,7 +79,15 @@ const focusLabelMap: Record<string, string> = {
             style={`--pub-index: ${index}`}
           >
             <div class="pub-card__title-row">
-              <h3 class="pub-card__title">{pub.data.title}</h3>
+              <h3 class="pub-card__title">
+                {pub.data.link ? (
+                  <a href={pub.data.link} target="_blank" rel="noopener noreferrer">
+                    {pub.data.title}
+                  </a>
+                ) : (
+                  pub.data.title
+                )}
+              </h3>
               <span class="pub-card__badge">{pub.data.type}</span>
             </div>
 
@@ -106,13 +124,14 @@ const focusLabelMap: Record<string, string> = {
               <button 
                 class="btn-ghost"
                 data-cite
+                data-cite-bibtex={pub.data.bibtex || ''}
                 data-cite-authors={pub.data.authors}
                 data-cite-year={pub.data.year || ''}
                 data-cite-title={pub.data.title}
                 data-cite-venue={pub.data.venue || ''}
                 data-cite-type={pub.data.type}
               >
-                Cite
+                BibTeX
               </button>
               <button class="btn-abstract-toggle" data-toggle-abstract={index}>
                 Show Abstract ▼
@@ -144,7 +163,7 @@ const focusLabelMap: Record<string, string> = {
   <div class="modal-backdrop" id="cite-modal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h4 class="modal-title">Citation</h4>
+        <h4 class="modal-title">BibTeX</h4>
         <button class="modal-close" data-close-modal>×</button>
       </div>
       <div class="modal-body">
@@ -265,23 +284,71 @@ const focusLabelMap: Record<string, string> = {
   const citeText = document.getElementById('cite-text');
   const copyCiteBtn = document.getElementById('copy-cite-btn');
 
-  function formatCitationAPA(authors: string, year: string, title: string, venue: string, type: string): string {
-    const authorList = authors.split(/[,;]\s*/g).map(s => s.trim()).filter(Boolean).join(', ');
-    const yearStr = year ? `(${year}).` : '(n.d.).';
-    const venueStr = venue ? ` ${venue}.` : '';
-    const typeSuffix = type === 'arXiv' ? ' arXiv.' : type === 'Dissertation' ? ' [Doctoral dissertation].' : '';
-    return `${authorList} ${yearStr} ${title}.${venueStr}${typeSuffix}`;
+  function formatBibTeX(bibtex: string, authors: string, year: string, title: string, venue: string, type: string): string {
+    // If bibtex is provided, use it directly
+    if (bibtex && bibtex.trim()) {
+      return bibtex.trim();
+    }
+    
+    // Otherwise, generate a basic BibTeX entry
+    const authorList = authors.split(/[,;]\s*/g).map(s => s.trim()).filter(Boolean);
+    const firstAuthor = authorList[0] || 'Unknown';
+    const lastNames = authorList.map(author => {
+      const parts = author.trim().split(/\s+/);
+      return parts[parts.length - 1] || author;
+    });
+    const citeKey = lastNames[0]?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'unknown';
+    const yearKey = year || 'n.d.';
+    const entryKey = `${citeKey}${yearKey}`;
+    
+    // Determine entry type
+    let entryType = 'article';
+    if (type === 'Conference') entryType = 'inproceedings';
+    else if (type === 'Journal') entryType = 'article';
+    else if (type === 'Dissertation') entryType = 'phdthesis';
+    else if (type === 'Patent') entryType = 'misc';
+    else if (type === 'arXiv') entryType = 'article';
+    
+    // Format authors for BibTeX (Last, First and Last, First)
+    const formattedAuthors = authorList.map(author => {
+      const parts = author.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0];
+      const last = parts[parts.length - 1];
+      const first = parts.slice(0, -1).join(' ');
+      return `${last}, ${first}`;
+    }).join(' and ');
+    
+    let bibtexEntry = `@${entryType}{${entryKey},\n`;
+    bibtexEntry += `  author = {${formattedAuthors}},\n`;
+    bibtexEntry += `  title = {${title}},\n`;
+    if (year) bibtexEntry += `  year = {${year}},\n`;
+    if (venue) {
+      if (type === 'Conference') {
+        bibtexEntry += `  booktitle = {${venue}},\n`;
+      } else if (type === 'Journal') {
+        bibtexEntry += `  journal = {${venue}},\n`;
+      } else {
+        bibtexEntry += `  venue = {${venue}},\n`;
+      }
+    }
+    if (type === 'arXiv') {
+      bibtexEntry += `  archivePrefix = {arXiv},\n`;
+    }
+    bibtexEntry += `}`;
+    
+    return bibtexEntry;
   }
 
   document.querySelectorAll('[data-cite]').forEach(btn => {
     btn.addEventListener('click', () => {
+      const bibtex = btn.getAttribute('data-cite-bibtex') || '';
       const authors = btn.getAttribute('data-cite-authors') || '';
       const year = btn.getAttribute('data-cite-year') || '';
       const title = btn.getAttribute('data-cite-title') || '';
       const venue = btn.getAttribute('data-cite-venue') || '';
       const type = btn.getAttribute('data-cite-type') || '';
       
-      const citation = formatCitationAPA(authors, year, title, venue, type);
+      const citation = formatBibTeX(bibtex, authors, year, title, venue, type);
       
       if (citeText && citeModal) {
         citeText.textContent = citation;
