@@ -470,12 +470,13 @@ a.footer__contact-item:hover .footer__icon {
 /* ─── Hero Section ─────────────────────────────── */
 .hero {
   position: relative;
-  height: 50vh;
-  min-height: 420px;
+  height: auto;
+  min-height: 50vh;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 2rem 0;
 }
 
 @media (max-width: 768px) {
@@ -538,12 +539,11 @@ a.footer__contact-item:hover .footer__icon {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.4) 100%);
   backdrop-filter: blur(28px) saturate(1.3);
   -webkit-backdrop-filter: blur(28px) saturate(1.3);
-  padding: 2rem 2.5rem;
+  padding: 1.5rem 2rem;
   border-radius: var(--border-radius-lg);
   color: black;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.15),
@@ -553,18 +553,19 @@ a.footer__contact-item:hover .footer__icon {
 
 @media (max-width: 768px) {
   .hero__text-card {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 }
 
 .hero__title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: clamp(1.5rem, 5cqw, 2.5rem);
+  font-size: clamp(2rem, 4.2cqw, 8rem);
   font-weight: 700;
   letter-spacing: -0.03em;
-  line-height: 1.2;
+  line-height: 1.1;
   color: #000;
+  text-wrap: balance;
 }
 
 .hero__title-accent {
@@ -591,24 +592,8 @@ a.footer__contact-item:hover .footer__icon {
   font-size: clamp(0.9rem, 1.6vw, 1.1rem);
   margin-top: 0.5rem;
   line-height: 1.7;
-  flex: 1;
-  overflow-y: auto;
   font-weight: 400;
   color: #000;
-}
-
-/* Hide scrollbar but keep functionality */
-.hero__subtitle::-webkit-scrollbar {
-  width: 4px;
-}
-
-.hero__subtitle::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.hero__subtitle::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 2px;
 }
 
 .hero__image-card {
@@ -680,6 +665,29 @@ a.footer__contact-item:hover .footer__icon {
   background: var(--accent);
   border-color: var(--accent);
   transform: scale(1.1);
+}
+
+/* PI Attribution - Inline text style */
+.hero__pi-attribution {
+  display: inline-block;
+  margin-top: 1rem;
+  font-family: var(--font-serif);
+  font-size: clamp(0.85rem, 1.4vw, 0.95rem);
+  font-style: italic;
+  color: rgba(0, 0, 0, 0.7);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.hero__pi-attribution:hover {
+  color: var(--accent);
+}
+
+@media (max-width: 768px) {
+  .hero__pi-attribution {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+  }
 }
 
 /* ─── Research Section ─────────────────────────────── */

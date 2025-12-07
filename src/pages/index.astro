@@ -11,6 +11,12 @@ const homeData = {
     `${base}images/hero-1.svg`,
     `${base}images/hero-2.svg`
   ],
+  pi: {
+    name: 'Kassem Fawaz',
+    title: 'Principal Investigator',
+    photo: `${base}images/kassem.jpg`,
+    link: 'https://kassemfawaz.com/'
+  },
   researchItems: [
     {
       img: `${base}images/research-ai.svg`,
@@ -35,7 +41,7 @@ const homeData = {
   ]
 };
 
-const { heroTitle, heroSubtitle, heroImages, researchItems } = homeData;
+const { heroTitle, heroSubtitle, heroImages, researchItems, pi } = homeData;
 ---
 
 <BaseLayout title="Home">
@@ -55,6 +61,9 @@ const { heroTitle, heroSubtitle, heroImages, researchItems } = homeData;
         <h1 class="hero__title"><span class="hero__title-accent">WI-PI</span> : Wisconsin Privacy and Security Group</h1>
         <p class="hero__mission">Mission: Bringing Privacy Back to the People</p>
         <p class="hero__subtitle">{heroSubtitle}</p>
+        <a href={pi.link} target="_blank" rel="noopener noreferrer" class="hero__pi-attribution">
+          Led by Prof. {pi.name}
+        </a>
       </div>
       
       <div class="hero__image-card">
