@@ -251,7 +251,7 @@ npm run build
 2. Set Source to "GitHub Actions"
 3. Push to `main` branch to trigger deployment
 
-Site URL: `https://wipi.github.io/`
+Site URL: `https://wi-pi.github.io/new_wipi_website/`
 
 ---
 
